@@ -11,6 +11,7 @@
 
 #include <sid_pal_serial_bus_ifc.h>
 #include <sid_pal_gpio_ifc.h>
+#include <sid_pal_serial_bus_spi_pm.h>
 #include <app_subGHz_config.h>
 
 #include <zephyr/logging/log.h>
@@ -22,6 +23,86 @@ LOG_MODULE_REGISTER(sid_spi_bus, CONFIG_SPI_BUS_LOG_LEVEL);
 	(uint16_t)(SPI_WORD_SET(8) | SPI_TRANSFER_MSB | SPI_OP_MODE_MASTER | SPI_FULL_DUPLEX)
 
 static const struct spi_dt_spec bus_serial_spec = SPI_DT_SPEC_GET(LORA_DT_NODE, SPI_OPTIONS);
+
+#if defined(CONFIG_SIDEWALK_SPI_BUS_IDLE_PINS)
+
+#include <zephyr/drivers/pinctrl.h>
+#include <zephyr/sys/atomic.h>
+#include <hal/nrf_gpio.h>
+
+/* Pin functions and numbers of the bus are taken from the default pinctrl state
+ * of the SPI controller the transceiver hangs on.
+ */
+#define SPI_BUS_NODE DT_BUS(LORA_DT_NODE)
+#define SPI_BUS_PINCTRL_DEFAULT DT_PINCTRL_BY_IDX(SPI_BUS_NODE, 0, 0)
+
+#define SPI_BUS_PSEL(node_id, prop, idx) DT_PROP_BY_IDX(node_id, prop, idx)
+#define SPI_BUS_GROUP_PSELS(group_id)                                                              \
+	DT_FOREACH_PROP_ELEM_SEP(group_id, psels, SPI_BUS_PSEL, (, ))
+
+static const uint32_t spi_bus_psels[] = {
+	DT_FOREACH_CHILD_SEP(SPI_BUS_PINCTRL_DEFAULT, SPI_BUS_GROUP_PSELS, (, ))
+};
+
+static atomic_t spi_bus_idling;
+
+void sid_pal_serial_bus_spi_idle(void)
+{
+	if (!atomic_cas(&spi_bus_idling, 0, 1)) {
+		return;
+	}
+
+	int err = pm_device_action_run(bus_serial_spec.bus, PM_DEVICE_ACTION_SUSPEND);
+
+	if (err < 0 && err != -EALREADY) {
+		LOG_ERR("spi suspend err %d", err);
+		atomic_clear(&spi_bus_idling);
+		return;
+	}
+
+	for (size_t i = 0; i < ARRAY_SIZE(spi_bus_psels); i++) {
+		uint32_t pin = NRF_GET_PIN(spi_bus_psels[i]);
+
+		if (pin == NRF_PIN_DISCONNECTED) {
+			continue;
+		}
+
+		switch (NRF_GET_FUN(spi_bus_psels[i])) {
+		case NRF_FUN_SPIM_SCK:
+		case NRF_FUN_SPIM_MOSI:
+		case NRF_FUN_SPIM_MISO:
+			/* High, never low: a level translator with pull-ups to both
+			 * rails (TXS0102 on PCA63569) burns ~0.6 mA per line that is
+			 * held low.
+			 */
+			nrf_gpio_cfg_input(pin, NRF_GPIO_PIN_PULLUP);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+static void spi_bus_activate(void)
+{
+	if (!atomic_cas(&spi_bus_idling, 1, 0)) {
+		return;
+	}
+
+	int err = pm_device_action_run(bus_serial_spec.bus, PM_DEVICE_ACTION_RESUME);
+
+	if (err < 0 && err != -EALREADY) {
+		LOG_ERR("spi resume err %d", err);
+	}
+}
+
+#else
+
+static inline void spi_bus_activate(void)
+{
+}
+
+#endif /* CONFIG_SIDEWALK_SPI_BUS_IDLE_PINS */
 
 static sid_error_t zephyr_spi_bus_xfer(const struct sid_pal_serial_bus_iface *iface,
 				       const struct sid_pal_serial_bus_client *client, uint8_t *tx,
@@ -63,6 +144,8 @@ static sid_error_t zephyr_spi_bus_xfer(const struct sid_pal_serial_bus_iface *if
 	};
 
 	struct spi_buf_set rx_set = { .buffers = rx_buff, .count = 1 };
+
+	spi_bus_activate();
 
 	int err = spi_transceive_dt(&bus_serial_spec, ((tx) ? &tx_set : NULL),
 				    ((rx) ? &rx_set : NULL));

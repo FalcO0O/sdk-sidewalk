@@ -223,6 +223,20 @@ config SIDEWALK_SPI_BUS_NRFX
 	help
 	  Use nrfx spi bus for Sidewalk spi bus.
 
+config SIDEWALK_SPI_BUS_IDLE_PINS
+	bool "Park radio SPI pins while the transceiver sleeps"
+	depends on SIDEWALK_SPI_BUS && !SIDEWALK_SPI_BUS_NRFX
+	depends on SOC_FAMILY_NORDIC_NRF
+	select PM_DEVICE
+	default y
+	help
+	  Suspend the SPI controller once the transceiver is asleep and let its
+	  pins idle high instead of leaving them at the low level the SPIM
+	  parks them at. On boards that reach the transceiver through a level
+	  translator with pull-ups on both rails, every line held low costs
+	  around 0.6 mA. The bus is resumed automatically before the next
+	  transfer.
+
 if SIDEWALK_SPI_BUS_NRFX
 
 choice SIDEWALK_NRFX_SPI_INSTANCE_ID

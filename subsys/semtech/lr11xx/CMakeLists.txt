@@ -28,6 +28,7 @@ target_include_directories(sid_pal_radio_lr11xx_impl PRIVATE
 	${LR11XX_COMMON_INCLUDES}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${SID_PAL_PUBLIC_INCLUDES}
+	${CMAKE_CURRENT_SOURCE_DIR}/../../sal/sid_pal/include
 )
 
 target_compile_definitions(sid_pal_radio_lr11xx_impl PRIVATE

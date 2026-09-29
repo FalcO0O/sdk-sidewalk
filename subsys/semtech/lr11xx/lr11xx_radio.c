@@ -28,6 +28,7 @@
 #include <sid_pal_timer_ifc.h>
 
 #include <sid_pal_critical_region_ifc.h>
+#include <sid_pal_serial_bus_spi_pm.h>
 
 /*
  * -----------------------------------------------------------------------------
@@ -823,6 +824,7 @@ int32_t sid_pal_radio_sleep( uint32_t sleep_us )
             sid_pal_gpio_write( drv_ctx.config->gpios.led_rx, 0 );
 			// incase sidewalk wakes up the radio immediately after putting radio to sleep
 			sid_pal_delay_us(100);
+			sid_pal_serial_bus_spi_idle();
         }
 
         sid_pal_enter_critical_region();
