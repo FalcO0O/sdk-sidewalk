@@ -1985,10 +1985,9 @@ static int32_t radio_lr11xx_platform_init( void )
             SL_SID_LOG_APP_ERROR("busy dir fail");
             goto ret;
         }
-        if (sid_pal_gpio_pull_mode(drv_ctx.config->gpios.int1, SID_PAL_GPIO_PULL_DOWN) != SID_ERROR_NONE) {
-            SL_SID_LOG_APP_ERROR("int1 pull fail");
-            goto ret;
-		}
+        /* No pull-down on int1: behind a level translator it draws current
+         * against the translator pull-up.
+         */
         if (sid_pal_gpio_input_mode(drv_ctx.config->gpios.radio_busy, SID_PAL_GPIO_INPUT_CONNECT) != SID_ERROR_NONE) {
             SL_SID_LOG_APP_ERROR("busy inmode fail");
             goto ret;

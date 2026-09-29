@@ -36,7 +36,8 @@
 
 		reset-gpios = <&nordic_expansion_header 12 GPIO_ACTIVE_LOW>;
 		busy-gpios = <&nordic_expansion_header 14 GPIO_ACTIVE_HIGH>;
-		event-gpios = <&nordic_expansion_header 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+		/* No pull-down: it draws current against the TXS0102 pull-up. */
+		event-gpios = <&nordic_expansion_header 13 GPIO_ACTIVE_HIGH>;
 		gnss-lna-gpios = <&nordic_expansion_header 9 GPIO_ACTIVE_HIGH>;
 
 		lf-tx-path = <LR11XX_TX_PATH_LF_LP_HP>;
