@@ -1,0 +1,42 @@
+#
+# Copyright (c) 2026 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+mainmenu "Sidewalk location sample"
+
+menu "Sidewalk location sample"
+
+config SID_LOCATION_INTERVAL_S
+	int "Period of the location uplink in seconds"
+	range 10 86400
+	default 60
+	help
+	  Every period the application asks the location library for a location
+	  in the managed effort mode. The library starts with Bluetooth LE (L1)
+	  and moves to Wi-Fi (L3) and GNSS (L4) only when the previous level fails.
+
+config SID_LOCATION_RUN_TIMEOUT_S
+	int "Maximum duration of a single location run in seconds"
+	range 30 3600
+	default 180
+	help
+	  The device reboots when the location library does not report the end
+	  of a run within this time. This recovers from a stuck scan.
+
+config SID_LOCATION_MAX_ATTEMPTS
+	int "Maximum number of managed effort attempts in one period"
+	range 1 4
+	default 3
+	help
+	  After a failed attempt, the application immediately asks the library
+	  for the next attempt, so that one period covers the fallback from
+	  Bluetooth LE to Wi-Fi and GNSS.
+
+endmenu
+
+config SIDEWALK_APPLICATION_NAME
+	default "location"
+
+source "Kconfig.zephyr"

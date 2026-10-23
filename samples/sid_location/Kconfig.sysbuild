@@ -1,0 +1,12 @@
+#
+# Copyright (c) 2026 Nordic Semiconductor ASA
+#
+# SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+#
+
+# No bootloader: the application starts at 0x0.
+choice BOOTLOADER
+	default BOOTLOADER_NONE
+endchoice
+
+source "${ZEPHYR_BASE}/share/sysbuild/Kconfig"

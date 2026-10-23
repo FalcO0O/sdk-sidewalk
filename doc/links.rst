@@ -14,6 +14,8 @@
 .. _nRF54LM20 DK: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/zephyr/boards/nordic/nrf54lm20dk/doc/index.html
 .. _nrf54lv10dk: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/zephyr/boards/nordic/nrf54lv10dk/doc/index.html
 .. _nrf54lm20dk: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/zephyr/boards/nordic/nrf54lm20dk/doc/index.html
+.. _nrf54l15tag: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/zephyr/boards/nordic/nrf54l15tag/doc/index.html
+.. _Power Profiler Kit II: https://www.nordicsemi.com/Products/Development-hardware/Power-Profiler-Kit-2
 .. _nRF7002 EB II: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/zephyr/boards/shields/nrf7002eb2/doc/index.html
 .. _Building and programming an application: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/nrf/config_and_build/programming.html
 .. _Testing and debugging an application: https://docs.nordicsemi.com/bundle/ncs-3.4.1/page/nrf/test_and_optimize.html

@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) 2026 Nordic Semiconductor ASA
+ *
+ * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
+ */
+
+/ {
+	aliases {
+		loc-led-ble = &led1_blue;
+		loc-led-error = &led1_red;
+	};
+};
+
+/* Sensors are not used by the location sample */
+&bme688 {
+	status = "disabled";
+};
+
+&adxl367 {
+	status = "disabled";
+};
+
+&bmi270 {
+	status = "disabled";
+};
+
+&i2c21 {
+	status = "disabled";
+};
+
+&spi22 {
+	status = "disabled";
+};
+
+&adc {
+	status = "disabled";
+};
+
+#include "nrf54l15_no_bootloader_partitions.dtsi"
