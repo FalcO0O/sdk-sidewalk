@@ -1,0 +1,68 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  display: flex;
+}
+
+#panel {
+  width: 320px;
+  padding: 16px;
+  overflow-y: auto;
+  background: #0b2a4a;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+#panel h1 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+
+#map {
+  flex: 1;
+}
+
+#legend {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.ble { background: #0077c8; }
+.wifi { background: #2ca02c; }
+.gnss { background: #ff7f0e; }
+.other { background: #888; }
+
+.device {
+  border-top: 1px solid #ffffff33;
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.device .name {
+  font-weight: 600;
+}
+
+.device .detail {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+#status {
+  font-size: 12px;
+  opacity: 0.7;
+}

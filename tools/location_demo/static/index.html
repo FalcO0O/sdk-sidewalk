@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sidewalk location demo</title>
+  <link rel="stylesheet" href="/leaflet/leaflet.css">
+  <link rel="stylesheet" href="/viewer.css">
+</head>
+<body>
+  <aside id="panel">
+    <h1>Sidewalk location</h1>
+    <ul id="legend">
+      <li><span class="dot ble"></span>BLE</li>
+      <li><span class="dot wifi"></span>Wi-Fi</li>
+      <li><span class="dot gnss"></span>GNSS</li>
+      <li><span class="dot other"></span>Other</li>
+    </ul>
+    <div id="devices"></div>
+    <p id="status">Loading…</p>
+  </aside>
+  <main id="map"></main>
+  <script src="/leaflet/leaflet.js"></script>
+  <script src="/viewer.js"></script>
+</body>
+</html>

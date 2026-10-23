@@ -1,0 +1,14 @@
+{
+  "sql": "SELECT * FROM 'sidewalk/location-demo/in'",
+  "awsIotSqlVersion": "2016-03-23",
+  "ruleDisabled": false,
+  "actions": [
+    {
+      "republish": {
+        "roleArn": "arn:aws:iam::ACCOUNT_ID:role/SidewalkLocationDemoRepublish",
+        "topic": "sidewalk/location-demo/positions",
+        "qos": 0
+      }
+    }
+  ]
+}

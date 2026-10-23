@@ -1,0 +1,49 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListSidewalkDevices",
+      "Effect": "Allow",
+      "Action": "iotwireless:ListWirelessDevices",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ReadDemoDevicePositions",
+      "Effect": "Allow",
+      "Action": [
+        "iotwireless:GetWirelessDevice",
+        "iotwireless:GetResourcePosition"
+      ],
+      "Resource": "arn:aws:iotwireless:REGION:ACCOUNT_ID:WirelessDevice/*",
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/demo": "sidewalk-location-demo"
+        }
+      }
+    },
+    {
+      "Sid": "FindIotEndpoint",
+      "Effect": "Allow",
+      "Action": "iot:DescribeEndpoint",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ConnectViewer",
+      "Effect": "Allow",
+      "Action": "iot:Connect",
+      "Resource": "arn:aws:iot:REGION:ACCOUNT_ID:client/location-viewer-*"
+    },
+    {
+      "Sid": "SubscribeDemoTopic",
+      "Effect": "Allow",
+      "Action": "iot:Subscribe",
+      "Resource": "arn:aws:iot:REGION:ACCOUNT_ID:topicfilter/sidewalk/location-demo/*"
+    },
+    {
+      "Sid": "ReceiveDemoTopic",
+      "Effect": "Allow",
+      "Action": "iot:Receive",
+      "Resource": "arn:aws:iot:REGION:ACCOUNT_ID:topic/sidewalk/location-demo/*"
+    }
+  ]
+}
