@@ -123,6 +123,10 @@ static const freq_band_t bands[] = {
 
 static sid_pal_radio_sleep_start_notify_handler_t sleep_start_notify_cb;
 
+/* State Sidewalk expects the radio to be in once LBM releases it: the state at
+ * sid_pal_radio_hold_scan(), updated by sleep/standby requests dropped during the scan. */
+static uint8_t scan_exit_state = SID_PAL_RADIO_UNKNOWN;
+
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
@@ -764,8 +768,14 @@ int32_t sid_pal_radio_sleep( uint32_t sleep_us )
 {
     int32_t err;
 
+    sid_pal_enter_critical_region();
     if( drv_ctx.radio_state == SID_PAL_RADIO_SCAN )
+    {
+        scan_exit_state = SID_PAL_RADIO_SLEEP;
+        sid_pal_exit_critical_region();
         return RADIO_ERROR_NONE;
+    }
+    sid_pal_exit_critical_region();
 
     if( sleep_start_notify_cb && sleep_us )
     {
@@ -836,9 +846,13 @@ int32_t sid_pal_radio_sleep( uint32_t sleep_us )
 int32_t sid_pal_radio_standby( )
 {
     int32_t err = RADIO_ERROR_NONE;
+    sid_pal_enter_critical_region();
     if (drv_ctx.radio_state == SID_PAL_RADIO_SCAN) {
+      scan_exit_state = SID_PAL_RADIO_STANDBY;
+      sid_pal_exit_critical_region();
       return RADIO_ERROR_NONE;
     }
+    sid_pal_exit_critical_region();
 
     do
     {
@@ -1827,8 +1841,6 @@ void lr11xx_restore_transceiver()
 volatile uint8_t testcnt;
 #endif /* CONFIG_RADIO_LOCK_TEST */
 
-static uint8_t state_before_scan = SID_PAL_RADIO_UNKNOWN;
-
 int sid_pal_radio_hold_scan()
 {
 	uint8_t pinState;
@@ -1857,7 +1869,9 @@ int sid_pal_radio_hold_scan()
      SL_SID_LOG_APP_WARNING(BYEL "hold scan: radio in use"COLOR_RESET);
      return -1;
   }
-  state_before_scan = drv_ctx.radio_state;
+  if (drv_ctx.radio_state != SID_PAL_RADIO_SCAN) {
+     scan_exit_state = drv_ctx.radio_state;
+  }
   drv_ctx.radio_state = SID_PAL_RADIO_SCAN;
   sid_pal_exit_critical_region();
 #ifdef CONFIG_RADIO_LOCK_TEST
@@ -1887,6 +1901,8 @@ void sid_pal_radio_release_scan()
 
 	sid_pal_enter_critical_region();
 	drv_ctx.radio_state = SID_PAL_RADIO_STANDBY; // crit
+	const uint8_t exit_state = scan_exit_state;
+	scan_exit_state = SID_PAL_RADIO_UNKNOWN;
 
 #ifdef CONFIG_RADIO_LOCK_TEST
 	SL_SID_LOG_APP_INFO("sid_pal_release %u", testcnt);
@@ -1895,17 +1911,16 @@ void sid_pal_radio_release_scan()
 #endif /* CONFIG_RADIO_LOCK_TEST */
 	sid_pal_exit_critical_region();
 
-	/* The LBM radio planner sleeps the chip when its task ends, but those requests are
-	 * rejected once Sidewalk owns the radio again. Park the chip in the state it was in
-	 * before the scan. */
-	if (state_before_scan == SID_PAL_RADIO_SLEEP) {
+	/* lr11xx_restore_transceiver() wakes the chip that LBM put to sleep at the end of
+	 * its task. Sleep requests from Sidewalk are dropped during the scan, so park the
+	 * chip in the state Sidewalk last asked for. */
+	if (exit_state == SID_PAL_RADIO_SLEEP) {
 		int32_t err = sid_pal_radio_sleep(0);
 
 		if (err != RADIO_ERROR_NONE) {
 			SL_SID_LOG_APP_ERROR("%ld = release scan sleep", err);
 		}
 	}
-	state_before_scan = SID_PAL_RADIO_UNKNOWN;
 }
 
 void sid_pal_radio_gnss_prescan()
